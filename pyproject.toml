@@ -7,10 +7,10 @@ readme = "README.md"
 packages = [{include = "python_energy_test"}]
 
 [tool.poetry.dependencies]
-python = "^3.8"
-Cython = "^3.0.11"
+python = "^3.9"
 pyJoules = "^0.5.1"
 h5py = "^3.11.0"
+numpy = "^2.0.1"
 
 
 [build-system]
