@@ -1,11 +1,18 @@
 # python_energy_test
 Testing different energy consumptions of BubbleSort implementations in Python using PyJoular
 
-# Install the project
+# Run the test
+## Without the venv (you will have to make sure that all required packages are already installed)
+```bash
+python bubble_sort_power.py
+```
+
+## With a poetry venv
+Install the venv
+
 ```bash
 poetry install
 ```
-# Run the test
 ```bash
 poetry shell
 python bubble_sort_power.py
