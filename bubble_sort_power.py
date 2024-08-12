@@ -113,27 +113,6 @@ def bubbleSort_G21(array, *args):
                 array[j + 1].set(j_val)
 
 @measure_energy(handler=csv_handler)
-def bubbleSort_G27(array, *args):
-    """
-    A non-optimized Bubble Sort implementation using an HDF5 file stored in RAM.
-    """
-    size = len(array)
-    # Create an HDF5 file in memory with 'core' driver and 'backing_store=False' to ensure it stays in RAM
-    with h5py.File('in_memory.h5', 'w', driver='core', backing_store=False) as h5file:
-        # Create a dataset within the HDF5 file to store the array
-        dset = h5file.create_dataset('array', data=array)
-
-        # Perform Bubble Sort on the dataset
-        for _ in range(size):
-            for j in range(size - 1):
-                if dset[j] > dset[j + 1]:
-                    # Swap elements within the HDF5 dataset
-                    dset[j], dset[j + 1] = dset[j + 1], dset[j]
-
-        # Return the sorted array as a numpy array
-        sorted_array = dset[:]
-
-@measure_energy(handler=csv_handler)
 def bubbleSort_numPy(array, *args):
     """
     An optimized Bubble Sort implementation that performs the full sorting process on a NumPy array instead of a native Python array
@@ -179,13 +158,6 @@ if __name__ == "__main__":
         array = [ArrayEntry(value) for value in random_array]
         bubbleSort_G21(array)
         print('Finished: G21 BubbleSort')
-
-        # ~~~~~~~~~~~~~~~~~~~~~ Test case G27 ~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-        array = random_array[:]
-        bubbleSort_G27(array)
-        os.remove('bubble_sort_example.h5')
-        print('Finished: G27 BubbleSort')
 
         # ~~~~~~~~~~~~~~~~~~~~~ Test case NumPy ~~~~~~~~~~~~~~~~~~~~~~~~
         array = np.array(random_array)
