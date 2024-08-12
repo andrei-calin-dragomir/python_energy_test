@@ -113,18 +113,25 @@ def bubbleSort_G21(array, *args):
                 array[j + 1].set(j_val)
 
 @measure_energy(handler=csv_handler)
-def bubbleSort_G27(dataset, *args):
+def bubbleSort_G27(array, *args):
     """
-    An HDF5 dataset optimization of the Bubble Sort implementation.
-    The python-native array passed to the function is replaced by a HDF5 dataset
+    A non-optimized Bubble Sort implementation using an HDF5 file stored in RAM.
     """
-    size = len(dataset)
-    for _ in range(size):
-        for j in range(size - 1):
-            # Compare and swap elements in the HDF5 dataset
-            if dataset[j] > dataset[j + 1]:
-                # Swap elements
-                dataset[j], dataset[j + 1] = dataset[j + 1], dataset[j]
+    size = len(array)
+    # Create an HDF5 file in memory with 'core' driver and 'backing_store=False' to ensure it stays in RAM
+    with h5py.File('in_memory.h5', 'w', driver='core', backing_store=False) as h5file:
+        # Create a dataset within the HDF5 file to store the array
+        dset = h5file.create_dataset('array', data=array)
+
+        # Perform Bubble Sort on the dataset
+        for _ in range(size):
+            for j in range(size - 1):
+                if dset[j] > dset[j + 1]:
+                    # Swap elements within the HDF5 dataset
+                    dset[j], dset[j + 1] = dset[j + 1], dset[j]
+
+        # Return the sorted array as a numpy array
+        sorted_array = dset[:]
 
 @measure_energy(handler=csv_handler)
 def bubbleSort_numPy(array, *args):
@@ -163,29 +170,25 @@ if __name__ == "__main__":
         print('Finished: G3 BubbleSort')
 
         # ~~~~~~~~~~~~~~~~~~~~~ Test case G15 ~~~~~~~~~~~~~~~~~~~~~~~~~~
-        array = np.array(random_array[:], dtype=np.int32)  # Convert the list to a numpy array because ctypes requires it
+        array = np.array(random_array, dtype=np.int32)  # Convert the list to a numpy array because ctypes requires it
         bubbleSort_G15(array)
         print('Finished: G15 BubbleSort')
 
-        # # ~~~~~~~~~~~~~~~~~~~~~ Test case G21 ~~~~~~~~~~~~~~~~~~~~~~~~~~
+        # ~~~~~~~~~~~~~~~~~~~~~ Test case G21 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        array = [ArrayEntry(value) for value in random_array[:]]
+        array = [ArrayEntry(value) for value in random_array]
         bubbleSort_G21(array)
-        print('Finished: G23 BubbleSort')
+        print('Finished: G21 BubbleSort')
 
-        # # ~~~~~~~~~~~~~~~~~~~~~ Test case G27 ~~~~~~~~~~~~~~~~~~~~~~~~~~
+        # ~~~~~~~~~~~~~~~~~~~~~ Test case G27 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        # Create a new HDF5 file
-        with h5py.File('bubble_sort_example.h5', 'a') as f:
-            # Create a dataset in the file
-            data = np.array(random_array[:], dtype=np.int32)
-            dset = f.create_dataset('array', data=data)
-            bubbleSort_G27(dset)
+        array = random_array[:]
+        bubbleSort_G27(array)
         os.remove('bubble_sort_example.h5')
         print('Finished: G27 BubbleSort')
 
-        # ~~~~~~~~~~~~~~~~~~~~~ Test case NumPy ~~~~~~~~~~~~~~~~~~~~~~~~~~
-        array = np.array(random_array[:])
+        # ~~~~~~~~~~~~~~~~~~~~~ Test case NumPy ~~~~~~~~~~~~~~~~~~~~~~~~
+        array = np.array(random_array)
         bubbleSort_numPy(array)
         print('Finished: NumPy BubbleSort')
 
