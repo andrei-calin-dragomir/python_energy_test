@@ -11,6 +11,16 @@ csv_handler = CSVHandler('result.csv')
 lib = ctypes.CDLL('./libbubble_sort_step.so')
 lib.bubbleSortStep.argtypes = [ctypes.POINTER(ctypes.c_int), ctypes.c_int]
 
+class ArrayEntry:
+    def __init__(self, value):
+        self.value = value
+
+    def get(self):
+        return self.value
+    
+    def set(self, value):
+        self.value = value
+
 @measure_energy(handler=csv_handler)
 def bubbleSort_external(array, *args):
     """
@@ -87,8 +97,20 @@ def bubbleSort_G15(array, *args):
         lib.bubbleSortStep(array.ctypes.data_as(ctypes.POINTER(ctypes.c_int)), size)
 
 @measure_energy(handler=csv_handler)
-def bubbleSort_G23(array, *args):
-    pass
+def bubbleSort_G21(array, *args):
+    """
+    An object array optimization of the Bubble Sort implementation.
+    The python-native array passed to the function is replaced by an array of ArrayEntry objects
+    """
+    size = len(array)
+    for _ in range(size):
+        for j in range(size - 1):
+            # yield array, j, j+1, -1, -1  # Yield the current state before comparing
+            j_val = array[j].get()
+            j_one_val = array[j + 1].get()
+            if j_val > j_one_val:
+                array[j].set(j_one_val)
+                array[j + 1].set(j_val)
 
 @measure_energy(handler=csv_handler)
 def bubbleSort_G27(dataset, *args):
@@ -103,8 +125,6 @@ def bubbleSort_G27(dataset, *args):
             if dataset[j] > dataset[j + 1]:
                 # Swap elements
                 dataset[j], dataset[j + 1] = dataset[j + 1], dataset[j]
-        print(dataset[:10])
-    print("done")
 
 @measure_energy(handler=csv_handler)
 def bubbleSort_numPy(array, *args):
@@ -147,25 +167,25 @@ if __name__ == "__main__":
         bubbleSort_G15(array)
         print('Finished: G15 BubbleSort')
 
-        # # ~~~~~~~~~~~~~~~~~~~~~ Test case G23 ~~~~~~~~~~~~~~~~~~~~~~~~~~
+        # # ~~~~~~~~~~~~~~~~~~~~~ Test case G21 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        # array = random_array[:]
-        # bubbleSort_G23(array)
-        # print('Finished: G23 BubbleSort')
+        array = [ArrayEntry(value) for value in random_array[:]]
+        bubbleSort_G21(array)
+        print('Finished: G23 BubbleSort')
 
         # # ~~~~~~~~~~~~~~~~~~~~~ Test case G27 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        # # Create a new HDF5 file
-        # with h5py.File('bubble_sort_example.h5', 'a') as f:
-        #     # Create a dataset in the file
-        #     data = np.array(random_array[:], dtype=np.int32)
-        #     dset = f.create_dataset('array', data=data)
-        #     bubbleSort_G27(dset)
-        # os.remove('bubble_sort_example.h5')
-        # print('Finished: G27 BubbleSort')
+        # Create a new HDF5 file
+        with h5py.File('bubble_sort_example.h5', 'a') as f:
+            # Create a dataset in the file
+            data = np.array(random_array[:], dtype=np.int32)
+            dset = f.create_dataset('array', data=data)
+            bubbleSort_G27(dset)
+        os.remove('bubble_sort_example.h5')
+        print('Finished: G27 BubbleSort')
 
         # ~~~~~~~~~~~~~~~~~~~~~ Test case NumPy ~~~~~~~~~~~~~~~~~~~~~~~~~~
-        array = np.array(random_array[:], dtype=np.int32)  # Convert the list to a numpy array because ctypes requires it
+        array = np.array(random_array[:])
         bubbleSort_numPy(array)
         print('Finished: NumPy BubbleSort')
 
