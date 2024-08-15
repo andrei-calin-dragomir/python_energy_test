@@ -1,10 +1,8 @@
 from pyJoules.energy_meter import measure_energy
 from pyJoules.handler.csv_handler import CSVHandler
 import ctypes
-import h5py
 import numpy as np
 import random
-import os
 
 csv_handler = CSVHandler('result.csv')
 
@@ -113,11 +111,12 @@ def bubbleSort_G21(array, *args):
                 array[j + 1].set(j_val)
 
 @measure_energy(handler=csv_handler)
-def bubbleSort_numPy(array, *args):
+def bubbleSort_numPy(array_input, *args):
     """
     An optimized Bubble Sort implementation that performs the full sorting process on a NumPy array instead of a native Python array
     without early exits or any additional optimizations.
     """
+    array = np.array(array_input)
     size = len(array)
     for _ in range(size):
         for j in range(size - 1):
@@ -160,8 +159,7 @@ if __name__ == "__main__":
         print('Finished: G21 BubbleSort')
 
         # ~~~~~~~~~~~~~~~~~~~~~ Test case NumPy ~~~~~~~~~~~~~~~~~~~~~~~~
-        array = np.array(random_array)
-        bubbleSort_numPy(array)
+        bubbleSort_numPy(random_array[:])
         print('Finished: NumPy BubbleSort')
 
     csv_handler.save_data()
